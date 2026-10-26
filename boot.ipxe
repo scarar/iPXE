@@ -1,15 +1,19 @@
 #!ipxe
-# Debian 13 (trixie) netboot install with RAID 0 root on Vultr bare metal.
+# Debian 13 (trixie) netboot install on Vultr bare metal (two NVMe drives, /boot RAID 1).
+# RAID level for /: set "raid" below BEFORE pasting. raid1 = mirrored (use when the drives hold the chains with room,
+# e.g. 2 x 1.9 TB); raid0 = striped (only when the drives are too small to mirror, e.g. 2 x 960 GB).
 # Paste this whole file (not a URL) as the Vultr iPXE startup script.
 # ${platform} is "efi" or "pcbios", so the matching preseed is loaded.
+
+set raid raid1
 
 dhcp
 
 set mirror http://deb.debian.org/debian
 set installer-dir ${mirror}/dists/trixie/main/installer-amd64/current/images/netboot/debian-installer/amd64
-set preseed-url https://raw.githubusercontent.com/scarar/iPXE/main/preseed-${platform}.cfg
+set preseed-url https://raw.githubusercontent.com/scarar/iPXE/main/preseed-${platform}-${raid}.cfg
 
-echo Platform: ${platform}  Preseed: ${preseed-url}
+echo Platform: ${platform}  RAID for /: ${raid}  Preseed: ${preseed-url}
 
 kernel ${installer-dir}/linux initrd=initrd.gz auto=true priority=critical url=${preseed-url} interface=auto hostname=test-1 domain= netcfg/dhcp_timeout=60
 initrd ${installer-dir}/initrd.gz
